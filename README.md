@@ -17,8 +17,127 @@ CSV fields, wide (CJK, emoji) characters and markdown pipes.
 
 ## Install
 
-Usage and install instructions are written as each feature lands; see
-ROADMAP.md for the plan after v0.1.
+Needs Python 3.11 or newer.
+
+```bash
+git clone https://github.com/landry-some/col-snap.git
+cd col-snap
+python3 -m venv .venv
+.venv/bin/pip install -e .
+```
+
+This puts the `colsnap` command in `.venv/bin/`. Activate the venv
+(`source .venv/bin/activate`) or call `.venv/bin/colsnap` directly.
+
+## Usage
+
+```
+colsnap [FILE ...] [-d DELIM] [-a SPEC] [-f {plain,markdown}] [-g GAP]
+```
+
+With no files, or with `-`, it reads stdin. Output goes to stdout, so it works
+as an editor filter (for example `:'<,'>!colsnap` in Vim).
+
+### Delimiters
+
+The delimiter is detected from the input: tab, `|`, `,` or `;`, whichever
+splits the lines most consistently. If none fits, columns are split on
+whitespace. Quoted CSV fields such as `"Doe, Jane"` stay in one cell.
+
+```console
+$ colsnap examples/groceries.csv
+item           store             qty  price
+Apples, green  Corner Market       6   2.40
+Oat milk       Corner Market       2   3.15
+Coffee beans   Example Roasters    1  11.90
+Rice           Big Box Foods       1   4.05
+```
+
+For whitespace input, runs of two or more spaces separate columns when they do
+so consistently. Otherwise any whitespace does, and extra words stay in the
+last column, which suits `df` and `ps` output:
+
+```console
+$ colsnap examples/disk-usage.txt
+Filesystem  Size  Used  Avail  Use%  Mounted on
+/dev/fake1  50G   21G   27G    44%   /
+/dev/fake2  200G  150G  40G    79%   /home
+tmpfs       3.9G  0     3.9G   0%    /dev/shm
+```
+
+Set the delimiter yourself with `-d`: a single character, or one of `tab`,
+`comma`, `semicolon`, `pipe`, `space`.
+
+### Wide characters
+
+Cells are measured in terminal columns, not characters, so CJK text and emoji
+(two columns each) and combining accents (zero columns) line up:
+
+```console
+$ colsnap examples/cities.tsv
+city       country      population_m
+東京       Japan                14.0
+São Paulo  Brazil               11.5
+Lagos      Nigeria              15.4
+Zürich     Switzerland           0.4
+```
+
+### Alignment
+
+Columns where every cell (apart from a text header) is a number are
+right-aligned, everything else is left-aligned. Override it per column with
+`-a`, a comma-separated list of `l`, `r` and `c`. An empty entry keeps the
+default for that column:
+
+```bash
+colsnap -a c,,l examples/groceries.csv   # center column 1, auto column 2, left column 3
+```
+
+`-g` sets the number of spaces between columns (default 2).
+
+### Markdown tables
+
+Input that is already a markdown table (header row, then a `---|---` row) is
+re-aligned as markdown. The `:--`, `--:` and `:-:` markers are kept as
+alignment, and `|` inside a cell is written as `\|`:
+
+```console
+$ colsnap examples/messy-table.md
+| task                    | owner | hours |   status    |
+| ----------------------- | ----- | ----: | :---------: |
+| write parser            | me    |     3 |    done     |
+| width handling for 東京 | me    |   1.5 |    done     |
+| markdown output         | me    |     2 | in progress |
+| docs                    | me    |     1 |    todo     |
+```
+
+Left-aligned columns are written with plain dashes (`---`), which markdown also
+renders left-aligned. Use `-f markdown` to turn any other input into a markdown
+table (the first row becomes the header), or `-f plain` to turn a markdown table
+back into plain columns.
+
+### Limits in v0.1
+
+- Blank lines are dropped.
+- Leading indentation is not kept.
+- Long cells are never truncated or wrapped.
+
+These are on the [roadmap](ROADMAP.md).
+
+### Exit codes
+
+| Code | Meaning |
+| ---: | ------- |
+| 0 | Success |
+| 1 | A file could not be read, or the input is not UTF-8 |
+| 2 | Bad command-line arguments |
+
+## Tests
+
+```bash
+.venv/bin/pip install -e '.[test]'
+.venv/bin/pytest
+```
 
 ## License
 
