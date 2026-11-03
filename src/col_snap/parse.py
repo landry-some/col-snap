@@ -57,11 +57,23 @@ def detect_delimiter(lines):
 
 
 def _split_whitespace(lines):
-    # Command output like `df` or `ps` separates columns with runs of spaces,
-    # while single spaces may sit inside a cell ("Jan 3"). Prefer the wide gaps
-    # when the text has any.
-    gap = _WIDE_GAP if any(_WIDE_GAP.search(line.strip()) for line in lines) else _ANY_GAP
-    return [gap.split(line.strip()) for line in lines]
+    lines = [line.strip() for line in lines]
+    if not lines:
+        return []
+    counts = Counter(len(_ANY_GAP.split(line)) for line in lines)
+    columns = counts.most_common(1)[0][0]
+    # Single spaces may sit inside a cell ("Jan 3"). Runs of 2+ spaces win when
+    # they split every line into the same number of cells, and into no fewer
+    # cells than a plain whitespace split usually gives (right-aligned columns
+    # in `ps` output would otherwise merge).
+    wide = [_WIDE_GAP.split(line) for line in lines]
+    wide_counts = {len(row) for row in wide}
+    if len(wide_counts) == 1 and 2 <= min(wide_counts) and min(wide_counts) >= columns:
+        return wide
+    # Otherwise split on any whitespace. Command output like `df` or `ps` has a
+    # last column that may contain spaces ("Mounted on", command arguments), so
+    # extra words are kept together in the last cell.
+    return [_ANY_GAP.split(line, maxsplit=columns - 1) for line in lines]
 
 
 def split_rows(lines, delimiter=None):

@@ -71,3 +71,25 @@ def test_resolve_delimiter(name, expected):
 def test_resolve_delimiter_rejects_long_names():
     with pytest.raises(ValueError):
         resolve_delimiter("::")
+
+
+def test_whitespace_uneven_gaps_fall_back_to_any_space():
+    lines = [
+        "Filesystem      Size  Used Avail Use% Mounted on",
+        "/dev/sda1  20G  12G 7G  63% /",
+        "tmpfs 2.0G 0 2.0G 0% /dev/shm",
+    ]
+    rows = split_rows(lines)
+    assert rows[0] == ["Filesystem", "Size", "Used", "Avail", "Use%", "Mounted on"]
+    assert rows[1] == ["/dev/sda1", "20G", "12G", "7G", "63%", "/"]
+    assert rows[2] == ["tmpfs", "2.0G", "0", "2.0G", "0%", "/dev/shm"]
+
+
+def test_whitespace_last_column_keeps_command_args():
+    lines = [
+        "PID TTY TIME CMD",
+        "101 pts/0 00:00:01 bash",
+        "202 pts/0 00:00:00 python3 -m http.server 8000",
+    ]
+    rows = split_rows(lines)
+    assert rows[2] == ["202", "pts/0", "00:00:00", "python3 -m http.server 8000"]
