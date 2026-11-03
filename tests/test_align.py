@@ -70,3 +70,63 @@ def test_align_rows_trims_trailing_spaces():
 
 def test_align_rows_empty():
     assert align_rows([]) == []
+
+
+import pytest
+
+from col_snap.align import LEFT, guess_aligns, is_numeric, merge_aligns, parse_align_spec
+
+
+@pytest.mark.parametrize("text", ["0", "42", "-3", "+7", "3.14", ".5", "10.", "1e9", "-2.5E-3"])
+def test_is_numeric(text):
+    assert is_numeric(text)
+
+
+@pytest.mark.parametrize("text", ["", "abc", "1.2.3", "12px", "1,000", "--1", "e5"])
+def test_is_not_numeric(text):
+    assert not is_numeric(text)
+
+
+def test_guess_aligns_skips_header():
+    rows = [["name", "qty", "price"], ["apple", "3", "1.50"], ["kiwi", "10", ""]]
+    assert guess_aligns(rows) == [LEFT, RIGHT, RIGHT]
+
+
+def test_guess_aligns_mixed_column_stays_left():
+    rows = [["id", "size"], ["1", "12"], ["2", "big"]]
+    assert guess_aligns(rows) == [RIGHT, LEFT]
+
+
+def test_guess_aligns_numeric_first_row_is_data():
+    rows = [["1", "a"], ["22", "b"]]
+    assert guess_aligns(rows) == [RIGHT, LEFT]
+
+
+def test_guess_aligns_empty_column_is_left():
+    assert guess_aligns([["a", ""], ["b", ""]]) == [LEFT, LEFT]
+
+
+def test_guess_aligns_no_rows():
+    assert guess_aligns([]) == []
+
+
+def test_parse_align_spec():
+    assert parse_align_spec("l,R, center,,right") == [LEFT, RIGHT, CENTER, None, RIGHT]
+
+
+def test_parse_align_spec_rejects_unknown():
+    with pytest.raises(ValueError):
+        parse_align_spec("l,x")
+
+
+def test_merge_aligns_overrides_and_ignores_extra():
+    assert merge_aligns([LEFT, RIGHT, LEFT], [None, LEFT, CENTER, RIGHT]) == [LEFT, LEFT, CENTER]
+
+
+def test_numbers_right_aligned_end_to_end():
+    rows = [["name", "qty"], ["apple", "3"], ["kiwi", "10"]]
+    assert align_rows(rows, aligns=guess_aligns(rows)) == [
+        "name   qty",
+        "apple    3",
+        "kiwi    10",
+    ]

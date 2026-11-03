@@ -17,7 +17,7 @@ def run(monkeypatch, capsys, argv, stdin=""):
 def test_aligns_stdin(monkeypatch, capsys):
     code, out, _ = run(monkeypatch, capsys, [], "name,qty\napple,3\nkiwi,10\n")
     assert code == 0
-    assert out == "name   qty\napple  3\nkiwi   10\n"
+    assert out == "name   qty\napple    3\nkiwi    10\n"
 
 
 def test_reads_files(tmp_path, monkeypatch, capsys):
@@ -67,3 +67,19 @@ def test_module_entry_point():
         check=True,
     )
     assert result.stdout == "a    b\nccc  d\n"
+
+
+def test_align_flag_overrides_guess(monkeypatch, capsys):
+    code, out, _ = run(monkeypatch, capsys, ["-a", "r,l"], "name,qty\napple,3\nkiwi,10\n")
+    assert out == " name  qty\napple  3\n kiwi  10\n"
+
+
+def test_align_flag_empty_entry_keeps_guess(monkeypatch, capsys):
+    code, out, _ = run(monkeypatch, capsys, ["-a", "c,"], "id,qty\nab,3\nabcd,10\n")
+    assert out == " id   qty\n ab     3\nabcd   10\n"
+
+
+def test_bad_align_is_usage_error(monkeypatch, capsys):
+    with pytest.raises(SystemExit) as exc:
+        run(monkeypatch, capsys, ["-a", "q"])
+    assert exc.value.code == 2

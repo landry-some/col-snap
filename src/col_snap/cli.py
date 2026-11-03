@@ -4,7 +4,7 @@ import argparse
 import sys
 
 from . import __version__
-from .align import align_rows
+from .align import align_rows, guess_aligns, merge_aligns, parse_align_spec
 from .parse import resolve_delimiter, split_rows
 
 
@@ -19,6 +19,12 @@ def build_parser():
         "--delimiter",
         help="column delimiter: one character, or tab/comma/semicolon/pipe/space "
         "(default: detect it)",
+    )
+    parser.add_argument(
+        "-a",
+        "--align",
+        help="alignment per column, comma-separated l/r/c, e.g. 'l,r,,c'; an empty entry "
+        "keeps the default (numbers right, text left)",
     )
     parser.add_argument("-g", "--gap", type=int, default=2, help="spaces between columns (default: 2)")
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
@@ -50,6 +56,12 @@ def main(argv=None):
             delimiter = resolve_delimiter(args.delimiter)
         except ValueError as exc:
             parser.error(str(exc))
+    spec = []
+    if args.align is not None:
+        try:
+            spec = parse_align_spec(args.align)
+        except ValueError as exc:
+            parser.error(str(exc))
 
     try:
         lines = read_lines(args.files)
@@ -61,7 +73,8 @@ def main(argv=None):
         return 1
 
     rows = split_rows(lines, delimiter)
-    for line in align_rows(rows, gap=args.gap):
+    aligns = merge_aligns(guess_aligns(rows), spec)
+    for line in align_rows(rows, aligns=aligns, gap=args.gap):
         print(line)
     return 0
 

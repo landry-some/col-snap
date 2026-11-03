@@ -1,8 +1,12 @@
 """Pad rows of cells into aligned lines, measuring cells by display width."""
 
+import re
 import unicodedata
 
 LEFT, RIGHT, CENTER = "l", "r", "c"
+ALIGNS = {"l": LEFT, "left": LEFT, "r": RIGHT, "right": RIGHT, "c": CENTER, "center": CENTER}
+
+_NUMBER = re.compile(r"[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?")
 
 
 def char_width(ch):
@@ -40,6 +44,53 @@ def column_widths(rows):
     if not rows:
         return []
     return [max(display_width(cell) for cell in column) for column in zip(*rows)]
+
+
+def is_numeric(text):
+    return bool(_NUMBER.fullmatch(text))
+
+
+def guess_aligns(rows):
+    """RIGHT for columns whose non-empty cells are all numbers, else LEFT.
+
+    The first row is ignored when it isn't numeric itself, since it is usually
+    a header.
+    """
+    rows = fill_rows(rows)
+    if rows and not any(is_numeric(cell) for cell in rows[0]):
+        body = rows[1:]
+    else:
+        body = rows
+    aligns = []
+    for index in range(len(rows[0]) if rows else 0):
+        cells = [row[index] for row in body if row[index]]
+        aligns.append(RIGHT if cells and all(is_numeric(c) for c in cells) else LEFT)
+    return aligns
+
+
+def parse_align_spec(spec):
+    """Turn "l,r,c" into [LEFT, RIGHT, CENTER]. An empty entry means auto (None)."""
+    aligns = []
+    for part in spec.split(","):
+        part = part.strip().lower()
+        if not part:
+            aligns.append(None)
+        elif part in ALIGNS:
+            aligns.append(ALIGNS[part])
+        else:
+            raise ValueError(f"unknown alignment {part!r}, use l, r or c")
+    return aligns
+
+
+def merge_aligns(guessed, spec):
+    """Use spec where it has an entry, the guess everywhere else."""
+    merged = list(guessed)
+    for index, align in enumerate(spec):
+        if align is None:
+            continue
+        if index < len(merged):
+            merged[index] = align
+    return merged
 
 
 def align_rows(rows, aligns=None, gap=2):
