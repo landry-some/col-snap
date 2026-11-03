@@ -4,6 +4,8 @@ import csv
 import re
 from collections import Counter
 
+from .markdown import split_cells
+
 # Checked in this order, so on a tie the earlier one wins.
 CANDIDATES = ["\t", "|", ",", ";"]
 
@@ -26,7 +28,8 @@ def resolve_delimiter(name):
 
 def _split_line(line, delimiter):
     if delimiter == "|":
-        return [cell.strip() for cell in line.split("|")]
+        # Drops the outer pipes of "| a | b |" rows.
+        return split_cells(line)
     # csv understands quoted fields such as "Smith, Jane".
     row = next(csv.reader([line], delimiter=delimiter, skipinitialspace=True))
     return [cell.strip() for cell in row]

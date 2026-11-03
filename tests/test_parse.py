@@ -93,3 +93,7 @@ def test_whitespace_last_column_keeps_command_args():
     ]
     rows = split_rows(lines)
     assert rows[2] == ["202", "pts/0", "00:00:00", "python3 -m http.server 8000"]
+
+
+def test_pipe_rows_drop_outer_pipes():
+    assert split_rows(["| a | b |", "| c | d |"]) == [["a", "b"], ["c", "d"]]

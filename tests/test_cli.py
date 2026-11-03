@@ -83,3 +83,41 @@ def test_bad_align_is_usage_error(monkeypatch, capsys):
     with pytest.raises(SystemExit) as exc:
         run(monkeypatch, capsys, ["-a", "q"])
     assert exc.value.code == 2
+
+
+MESSY_TABLE = "|name|qty|\n|:-:|---|\n|apple|3|\n|kiwi|10|\n"
+
+
+def test_realigns_markdown_table(monkeypatch, capsys):
+    code, out, _ = run(monkeypatch, capsys, [], MESSY_TABLE)
+    assert code == 0
+    assert out == (
+        "| name  | qty |\n"
+        "| :---: | --: |\n"
+        "| apple |   3 |\n"
+        "| kiwi  |  10 |\n"
+    )
+
+
+def test_markdown_table_to_plain(monkeypatch, capsys):
+    code, out, _ = run(monkeypatch, capsys, ["-f", "plain"], MESSY_TABLE)
+    assert out == "name   qty\napple    3\nkiwi    10\n"
+
+
+def test_csv_to_markdown(monkeypatch, capsys):
+    code, out, _ = run(monkeypatch, capsys, ["-f", "markdown"], 'name,city\n"Doe, Jane",Springfield\n')
+    assert out == (
+        "| name      | city        |\n"
+        "| --------- | ----------- |\n"
+        "| Doe, Jane | Springfield |\n"
+    )
+
+
+def test_align_flag_beats_markdown_markers(monkeypatch, capsys):
+    code, out, _ = run(monkeypatch, capsys, ["-a", "l,l"], MESSY_TABLE)
+    assert out.splitlines()[1] == "| ----- | --- |"
+
+
+def test_explicit_delimiter_skips_markdown_detection(monkeypatch, capsys):
+    code, out, _ = run(monkeypatch, capsys, ["-d", "|"], "a|b\n-|-\n")
+    assert out == "a  b\n-  -\n"
