@@ -18,7 +18,7 @@ Planned work after v0.1. Estimates are rough, in hours.
 - [ ] Escaped pipes (`\|`) and inline code containing `|` inside markdown cells (1.5 h)
 - [ ] Mixed line endings (CRLF input) and a missing final newline (0.5 h)
 - [ ] Better delimiter detection when the first lines disagree (header vs data) (1.5 h)
-- [ ] Numbers with thousands separators, currency signs and percentages counted as numeric (1 h)
+- [x] Numbers with thousands separators, currency signs and percentages counted as numeric (1 h)
 - [ ] Zero-width joiner emoji sequences and other width corner cases (1.5 h)
 - [ ] Decimal-point alignment for numeric columns with different precision (1.5 h)
 

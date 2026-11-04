@@ -6,7 +6,13 @@ import unicodedata
 LEFT, RIGHT, CENTER = "l", "r", "c"
 ALIGNS = {"l": LEFT, "left": LEFT, "r": RIGHT, "right": RIGHT, "c": CENTER, "center": CENTER}
 
-_NUMBER = re.compile(r"[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?")
+# An optional sign and currency sign, digits with optional "," thousands
+# groups, then an optional exponent or percent sign: -3, $1,250.00, 12.5%.
+_NUMBER = re.compile(
+    r"([+-]?[$€£¥]?|[$€£¥][+-])"
+    r"((\d{1,3}(,\d{3})+|\d+)(\.\d*)?|\.\d+)"
+    r"([eE][+-]?\d+|%)?"
+)
 
 
 def char_width(ch):

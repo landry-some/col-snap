@@ -77,12 +77,24 @@ import pytest
 from col_snap.align import LEFT, guess_aligns, is_numeric, merge_aligns, parse_align_spec
 
 
-@pytest.mark.parametrize("text", ["0", "42", "-3", "+7", "3.14", ".5", "10.", "1e9", "-2.5E-3"])
+@pytest.mark.parametrize(
+    "text",
+    [
+        "0", "42", "-3", "+7", "3.14", ".5", "10.", "1e9", "-2.5E-3",
+        "1,000", "-12,345.67", "$5", "€1,250.00", "-$3.50", "£-2", "44%", "-0.5%",
+    ],
+)
 def test_is_numeric(text):
     assert is_numeric(text)
 
 
-@pytest.mark.parametrize("text", ["", "abc", "1.2.3", "12px", "1,000", "--1", "e5"])
+@pytest.mark.parametrize(
+    "text",
+    [
+        "", "abc", "1.2.3", "12px", "--1", "e5", "1,00", "12,3456", ",100", "1,000,",
+        "$", "%", "5%%", "1e5%", "$$1", "-$-1", "US$5",
+    ],
+)
 def test_is_not_numeric(text):
     assert not is_numeric(text)
 
@@ -130,3 +142,8 @@ def test_numbers_right_aligned_end_to_end():
         "apple    3",
         "kiwi    10",
     ]
+
+
+def test_guess_aligns_money_and_percent_columns():
+    rows = [["item", "price", "share"], ["rent", "$1,200.00", "45%"], ["food", "$350", "13.5%"]]
+    assert guess_aligns(rows) == [LEFT, RIGHT, RIGHT]

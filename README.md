@@ -61,9 +61,9 @@ last column, which suits `df` and `ps` output:
 ```console
 $ colsnap examples/disk-usage.txt
 Filesystem  Size  Used  Avail  Use%  Mounted on
-/dev/fake1  50G   21G   27G    44%   /
-/dev/fake2  200G  150G  40G    79%   /home
-tmpfs       3.9G  0     3.9G   0%    /dev/shm
+/dev/fake1  50G   21G   27G     44%  /
+/dev/fake2  200G  150G  40G     79%  /home
+tmpfs       3.9G  0     3.9G     0%  /dev/shm
 ```
 
 Set the delimiter yourself with `-d`: a single character, or one of `tab`,
@@ -86,7 +86,9 @@ Zürich     Switzerland           0.4
 ### Alignment
 
 Columns where every cell (apart from a text header) is a number are
-right-aligned, everything else is left-aligned. Override it per column with
+right-aligned, everything else is left-aligned. Numbers may have a sign, `,`
+thousands separators, a leading currency sign (`$`, `€`, `£`, `¥`) or a
+trailing `%`, so `-$1,250.00` and `12.5%` both count. Override it per column with
 `-a`, a comma-separated list of `l`, `r` and `c`. An empty entry keeps the
 default for that column:
 
