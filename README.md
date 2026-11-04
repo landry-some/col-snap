@@ -32,7 +32,7 @@ This puts the `colsnap` command in `.venv/bin/`. Activate the venv
 ## Usage
 
 ```
-colsnap [FILE ...] [-d DELIM] [-a SPEC] [-f {plain,markdown}] [-g GAP]
+colsnap [FILE ...] [-d DELIM] [-a SPEC] [-f {plain,markdown,csv,tsv}] [-g GAP]
 ```
 
 With no files, or with `-`, it reads stdin. Output goes to stdout, so it works
@@ -115,6 +115,21 @@ Left-aligned columns are written with plain dashes (`---`), which markdown also
 renders left-aligned. Use `-f markdown` to turn any other input into a markdown
 table (the first row becomes the header), or `-f plain` to turn a markdown table
 back into plain columns.
+
+### Converting to CSV or TSV
+
+`-f csv` and `-f tsv` write the parsed rows as delimited text instead of
+aligning them. Cells that contain the delimiter or quotes are quoted, and short
+rows get empty cells so every line has the same number of fields:
+
+```console
+$ colsnap -f csv examples/messy-table.md
+task,owner,hours,status
+write parser,me,3,done
+width handling for 東京,me,1.5,done
+markdown output,me,2,in progress
+docs,me,1,todo
+```
 
 ### Limits in v0.1
 

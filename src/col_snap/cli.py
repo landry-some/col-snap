@@ -6,7 +6,9 @@ import sys
 from . import __version__
 from .align import align_rows, guess_aligns, merge_aligns, parse_align_spec
 from .markdown import is_markdown_table, parse_table, render_table
-from .parse import resolve_delimiter, split_rows
+from .parse import join_rows, resolve_delimiter, split_rows
+
+DELIMITED = {"csv": ",", "tsv": "\t"}
 
 
 def build_parser():
@@ -30,8 +32,9 @@ def build_parser():
     parser.add_argument(
         "-f",
         "--format",
-        choices=["plain", "markdown"],
-        help="output format (default: markdown when the input is a markdown table, else plain)",
+        choices=["plain", "markdown", "csv", "tsv"],
+        help="output format (default: markdown when the input is a markdown table, else plain); "
+        "csv and tsv convert instead of aligning",
     )
     parser.add_argument("-g", "--gap", type=int, default=2, help="spaces between columns (default: 2)")
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
@@ -90,6 +93,8 @@ def main(argv=None):
     aligns = merge_aligns(merge_aligns(guess_aligns(rows), markers), spec)
     if out_format == "markdown":
         out = render_table(rows, aligns)
+    elif out_format in DELIMITED:
+        out = join_rows(rows, DELIMITED[out_format])
     else:
         out = align_rows(rows, aligns=aligns, gap=args.gap)
     for line in out:

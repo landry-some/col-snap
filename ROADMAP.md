@@ -6,7 +6,7 @@ Planned work after v0.1. Estimates are rough, in hours.
 
 - [ ] `--max-width N` to truncate or wrap long cells so the table fits the terminal (3 h)
 - [ ] Box-drawing output style (`-f box`) with Unicode or ASCII borders (2 h)
-- [ ] CSV and TSV output, so colsnap can also convert between formats (1 h)
+- [x] CSV and TSV output, so colsnap can also convert between formats (1 h)
 - [ ] `--columns 1,3` to select and reorder columns (1.5 h)
 - [ ] Keep comment lines (`#`) and blank lines in place while aligning the rows around them (1.5 h)
 - [ ] Preserve leading indentation, so tables inside code comments stay indented (1 h)

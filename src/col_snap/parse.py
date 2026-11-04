@@ -1,9 +1,11 @@
 """Split lines of text into rows of cells."""
 
 import csv
+import io
 import re
 from collections import Counter
 
+from .align import fill_rows
 from .markdown import split_cells
 
 # Checked in this order, so on a tie the earlier one wins.
@@ -91,3 +93,19 @@ def split_rows(lines, delimiter=None):
     if delimiter == WHITESPACE:
         return _split_whitespace(lines)
     return [_split_line(line, delimiter) for line in lines]
+
+
+def join_rows(rows, delimiter):
+    """Write rows as delimited text (CSV or TSV), quoting cells where needed.
+
+    Short rows are padded with empty cells so every line has the same fields.
+    """
+    out = io.StringIO()
+    writer = csv.writer(out, delimiter=delimiter, lineterminator="")
+    lines = []
+    for row in fill_rows(rows):
+        writer.writerow(row)
+        lines.append(out.getvalue())
+        out.seek(0)
+        out.truncate()
+    return lines

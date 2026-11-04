@@ -1,6 +1,6 @@
 import pytest
 
-from col_snap.parse import detect_delimiter, resolve_delimiter, split_rows
+from col_snap.parse import detect_delimiter, join_rows, resolve_delimiter, split_rows
 
 
 def test_detects_tab():
@@ -97,3 +97,14 @@ def test_whitespace_last_column_keeps_command_args():
 
 def test_pipe_rows_drop_outer_pipes():
     assert split_rows(["| a | b |", "| c | d |"]) == [["a", "b"], ["c", "d"]]
+
+
+def test_join_rows_csv_quotes_when_needed():
+    assert join_rows([["name", "note"], ["Doe, Jane", 'say "hi"']], ",") == [
+        "name,note",
+        '"Doe, Jane","say ""hi"""',
+    ]
+
+
+def test_join_rows_tsv():
+    assert join_rows([["a", "b c"], ["1", ""]], "\t") == ["a\tb c", "1\t"]

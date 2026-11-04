@@ -121,3 +121,19 @@ def test_align_flag_beats_markdown_markers(monkeypatch, capsys):
 def test_explicit_delimiter_skips_markdown_detection(monkeypatch, capsys):
     code, out, _ = run(monkeypatch, capsys, ["-d", "|"], "a|b\n-|-\n")
     assert out == "a  b\n-  -\n"
+
+
+def test_markdown_table_to_csv(monkeypatch, capsys):
+    code, out, _ = run(monkeypatch, capsys, ["-f", "csv"], "| a | b |\n|---|---|\n| x, y | 1 |\n")
+    assert code == 0
+    assert out == 'a,b\n"x, y",1\n'
+
+
+def test_csv_to_tsv(monkeypatch, capsys):
+    code, out, _ = run(monkeypatch, capsys, ["-f", "tsv"], 'name,city\n"Doe, Jane",Springfield\n')
+    assert out == "name\tcity\nDoe, Jane\tSpringfield\n"
+
+
+def test_csv_output_pads_short_rows(monkeypatch, capsys):
+    code, out, _ = run(monkeypatch, capsys, ["-f", "csv"], "a b c\nd e\n")
+    assert out == "a,b,c\nd,e,\n"
