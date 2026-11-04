@@ -137,3 +137,25 @@ def test_csv_to_tsv(monkeypatch, capsys):
 def test_csv_output_pads_short_rows(monkeypatch, capsys):
     code, out, _ = run(monkeypatch, capsys, ["-f", "csv"], "a b c\nd e\n")
     assert out == "a,b,c\nd,e,\n"
+
+
+def test_columns_select_and_reorder(monkeypatch, capsys):
+    code, out, _ = run(monkeypatch, capsys, ["-c", "3,1"], "name,city,qty\napple,Oslo,3\nkiwi,Rome,10\n")
+    assert code == 0
+    assert out == "qty  name\n  3  apple\n 10  kiwi\n"
+
+
+def test_columns_keep_markdown_markers(monkeypatch, capsys):
+    code, out, _ = run(monkeypatch, capsys, ["--columns", "2,1"], MESSY_TABLE)
+    assert out == (
+        "| qty | name  |\n"
+        "| --: | :---: |\n"
+        "|   3 | apple |\n"
+        "|  10 | kiwi  |\n"
+    )
+
+
+def test_bad_columns_is_usage_error(monkeypatch, capsys):
+    with pytest.raises(SystemExit) as exc:
+        run(monkeypatch, capsys, ["-c", "0"])
+    assert exc.value.code == 2

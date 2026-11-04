@@ -1,6 +1,13 @@
 import pytest
 
-from col_snap.parse import detect_delimiter, join_rows, resolve_delimiter, split_rows
+from col_snap.parse import (
+    detect_delimiter,
+    join_rows,
+    parse_columns_spec,
+    resolve_delimiter,
+    select_columns,
+    split_rows,
+)
 
 
 def test_detects_tab():
@@ -108,3 +115,17 @@ def test_join_rows_csv_quotes_when_needed():
 
 def test_join_rows_tsv():
     assert join_rows([["a", "b c"], ["1", ""]], "\t") == ["a\tb c", "1\t"]
+
+
+def test_parse_columns_spec():
+    assert parse_columns_spec("3, 1,1") == [2, 0, 0]
+
+
+@pytest.mark.parametrize("spec", ["0", "a", "1,,2", "-1", ""])
+def test_parse_columns_spec_rejects_bad_numbers(spec):
+    with pytest.raises(ValueError):
+        parse_columns_spec(spec)
+
+
+def test_select_columns_reorders_and_fills_missing():
+    assert select_columns([["a", "b", "c"], ["d"]], [2, 0, 5]) == [["c", "a", ""], ["", "d", ""]]

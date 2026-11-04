@@ -6,7 +6,13 @@ import sys
 from . import __version__
 from .align import align_rows, guess_aligns, merge_aligns, parse_align_spec
 from .markdown import is_markdown_table, parse_table, render_table
-from .parse import join_rows, resolve_delimiter, split_rows
+from .parse import (
+    join_rows,
+    parse_columns_spec,
+    resolve_delimiter,
+    select_columns,
+    split_rows,
+)
 
 DELIMITED = {"csv": ",", "tsv": "\t"}
 
@@ -35,6 +41,11 @@ def build_parser():
         choices=["plain", "markdown", "csv", "tsv"],
         help="output format (default: markdown when the input is a markdown table, else plain); "
         "csv and tsv convert instead of aligning",
+    )
+    parser.add_argument(
+        "-c",
+        "--columns",
+        help="columns to keep, numbered from 1, in output order, e.g. '3,1'",
     )
     parser.add_argument("-g", "--gap", type=int, default=2, help="spaces between columns (default: 2)")
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
@@ -72,6 +83,12 @@ def main(argv=None):
             spec = parse_align_spec(args.align)
         except ValueError as exc:
             parser.error(str(exc))
+    columns = None
+    if args.columns is not None:
+        try:
+            columns = parse_columns_spec(args.columns)
+        except ValueError as exc:
+            parser.error(str(exc))
 
     try:
         lines = read_lines(args.files)
@@ -88,6 +105,9 @@ def main(argv=None):
     else:
         rows, markers = split_rows(lines, delimiter), []
         out_format = args.format or "plain"
+    if columns is not None:
+        rows = select_columns(rows, columns)
+        markers = [markers[i] if i < len(markers) else None for i in columns]
 
     # Priority: --align, then markdown :--: markers, then the numeric guess.
     aligns = merge_aligns(merge_aligns(guess_aligns(rows), markers), spec)

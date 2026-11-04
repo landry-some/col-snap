@@ -109,3 +109,19 @@ def join_rows(rows, delimiter):
         out.seek(0)
         out.truncate()
     return lines
+
+
+def parse_columns_spec(spec):
+    """Turn "3,1" into the zero-based indexes [2, 0]."""
+    indexes = []
+    for part in spec.split(","):
+        part = part.strip()
+        if not part.isdigit() or int(part) < 1:
+            raise ValueError(f"column numbers start at 1: {part!r}")
+        indexes.append(int(part) - 1)
+    return indexes
+
+
+def select_columns(rows, indexes):
+    """Keep only the given columns, in the given order; missing cells are empty."""
+    return [[row[i] if i < len(row) else "" for i in indexes] for row in rows]

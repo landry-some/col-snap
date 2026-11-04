@@ -32,7 +32,8 @@ This puts the `colsnap` command in `.venv/bin/`. Activate the venv
 ## Usage
 
 ```
-colsnap [FILE ...] [-d DELIM] [-a SPEC] [-f {plain,markdown,csv,tsv}] [-g GAP]
+colsnap [FILE ...] [-d DELIM] [-a SPEC] [-f {plain,markdown,csv,tsv}]
+        [-c COLS] [-g GAP]
 ```
 
 With no files, or with `-`, it reads stdin. Output goes to stdout, so it works
@@ -94,6 +95,20 @@ colsnap -a c,,l examples/groceries.csv   # center column 1, auto column 2, left 
 ```
 
 `-g` sets the number of spaces between columns (default 2).
+
+### Selecting columns
+
+`-c` keeps only the listed columns, numbered from 1, in the order given. A
+column can be repeated, and rows that are too short get an empty cell:
+
+```console
+$ colsnap -c 4,1 examples/groceries.csv
+price  item
+ 2.40  Apples, green
+ 3.15  Oat milk
+11.90  Coffee beans
+ 4.05  Rice
+```
 
 ### Markdown tables
 
