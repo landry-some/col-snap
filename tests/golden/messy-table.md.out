@@ -1,0 +1,6 @@
+| task                    | owner | hours |   status    |
+| ----------------------- | ----- | ----: | :---------: |
+| write parser            | me    |     3 |    done     |
+| width handling for 東京 | me    |   1.5 |    done     |
+| markdown output         | me    |     2 | in progress |
+| docs                    | me    |     1 |    todo     |

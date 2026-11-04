@@ -1,0 +1,4 @@
+Filesystem  Size  Used  Avail  Use%  Mounted on
+/dev/fake1  50G   21G   27G     44%  /
+/dev/fake2  200G  150G  40G     79%  /home
+tmpfs       3.9G  0     3.9G     0%  /dev/shm

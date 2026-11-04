@@ -171,6 +171,10 @@ These are on the [roadmap](ROADMAP.md).
 .venv/bin/pytest
 ```
 
+Each file in `examples/` is also checked against its expected output in
+`tests/golden/`. After an intended output change, regenerate it with
+`colsnap examples/<name> > tests/golden/<name>.out` and review the diff.
+
 ## License
 
 MIT, see [LICENSE](LICENSE).

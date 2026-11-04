@@ -30,7 +30,7 @@ Planned work after v0.1. Estimates are rough, in hours.
 ## Tests
 
 - [ ] Property-style tests: aligning twice gives the same output as aligning once (1 h)
-- [ ] Golden-file tests over the files in `examples/` (1 h)
+- [x] Golden-file tests over the files in `examples/` (1 h)
 - [ ] CI workflow running the tests on Linux, macOS and Windows (1 h)
 
 ## Docs
